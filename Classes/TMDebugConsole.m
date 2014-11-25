@@ -256,12 +256,13 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     DDLogMessage *message = self.messages[self.messages.count - indexPath.row - 1];
-	NSString *messageText = [self textForMessage:message];
-	CGSize maximumMessageSize = CGSizeMake(self.tableView.bounds.size.width - kTMDebugConsoleTableViewCellHorizontalPadding, CGFLOAT_MAX);
-	CGSize messageSize = [messageText sizeWithFont:self.fontForMessages
-								 constrainedToSize:maximumMessageSize
-									 lineBreakMode:NSLineBreakByCharWrapping];
-
+    NSString *messageText = [self textForMessage:message];
+    CGSize maximumMessageSize = CGSizeMake(self.tableView.bounds.size.width - kTMDebugConsoleTableViewCellHorizontalPadding, CGFLOAT_MAX);
+    CGSize messageSize = [messageText boundingRectWithSize:maximumMessageSize
+                                                   options:NSStringDrawingUsesLineFragmentOrigin
+                                                attributes:@{NSFontAttributeName: self.fontForMessages}
+                                                   context:nil].size;
+    
     return messageSize.height + kTMDebugConsoleTableViewCellVerticalSpacing;
 }
 
