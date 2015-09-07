@@ -23,7 +23,7 @@ static TMDebugConsole *sharedInstance;
 static NSTimeInterval const kTMDebugConsoleMessageBufferingTime = 0.2;
 
 static NSUInteger const kTMDebugConsoleMaximumMessageLength = 512;
-static NSUInteger const kTMDebugConsoleMaximumMessages = 100;
+static NSUInteger const kTMDebugConsoleMaximumMessages = 1000;
 
 static CGFloat const kTMDebugConsoleBackgroundAlpha = 0.9f;
 
@@ -237,7 +237,7 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 
 	if (self.messages.count >= kTMDebugConsoleMaximumMessages)
 	{
-		NSRange messagesToDelete = NSMakeRange(kTMDebugConsoleMaximumMessages - 1, self.messages.count - kTMDebugConsoleMaximumMessages);
+		NSRange messagesToDelete = NSMakeRange(0, self.messages.count - kTMDebugConsoleMaximumMessages);
 		[self.messages removeObjectsInRange:messagesToDelete];
 	}
 
