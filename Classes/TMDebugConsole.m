@@ -274,9 +274,9 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 
 - (NSString *)textForMessage:(TMDebugConsoleMessage *)message
 {
-    NSMutableString *logMessage = [message->_logMessage mutableCopy];
+    NSMutableString *logMessage = [message.logMessage mutableCopy];
     CFStringTrimWhitespace((CFMutableStringRef)logMessage);
-	NSString *formattedTime = [self.dateFormatter stringFromDate:message->_timestamp];
+	NSString *formattedTime = [self.dateFormatter stringFromDate:message.timestamp];
 
 	NSString *formattedMessage = [NSString stringWithFormat:kTMDebugConsoleMessageFormat, formattedTime, logMessage];
 	if ([formattedMessage length] > kTMDebugConsoleMaximumMessageLength)
@@ -292,11 +292,11 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 {
 	UIColor *colorForMessage;
 
-	if (message->_logFlag == LOG_FLAG_ERROR)
+	if (message.logFlag == LOG_FLAG_ERROR)
 	{
 		colorForMessage = [UIColor redColor];
 	}
-	else if (message->_logFlag == LOG_FLAG_WARN)
+	else if (message.logFlag == LOG_FLAG_WARN)
 	{
 		colorForMessage = [UIColor orangeColor];
 	}
