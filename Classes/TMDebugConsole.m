@@ -185,31 +185,17 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 
 - (void)logMessage:(DDLogMessage *)logMessage
 {
-	logMessage = [self formatLogMessage:logMessage];
-	[self scheduleLogMessage:logMessage];
-}
-
-- (DDLogMessage *)formatLogMessage:(DDLogMessage *)logMessage
-{
-	if (formatter)
-	{
-		NSString *logMsg = [formatter formatLogMessage:logMessage];
-		if (logMsg != nil)
-		{
-			logMessage->logMsg = logMsg;
-		}
-		else
-		{
-			logMessage = nil;
-		}
-	}
-	return logMessage;
+    NSString *logMsg = [formatter formatLogMessage:logMessage];
+    
+    if (logMsg)
+    {
+        logMessage->logMsg = logMsg;
+        [self scheduleLogMessage:logMessage];
+    }
 }
 
 - (void)scheduleLogMessage:(DDLogMessage *)logMessage
 {
-	if (logMessage == nil) return;
-	
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[self.messagesPendingToBeAdded addObject:logMessage];
 		
