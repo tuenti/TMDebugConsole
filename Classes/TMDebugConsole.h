@@ -18,7 +18,7 @@
 
 #import "DDLog.h"
 
-@interface TMDebugConsole : NSObject <DDLogger>
+@interface TMDebugConsole : DDAbstractLogger
 
 + (TMDebugConsole *)sharedInstance;
 
