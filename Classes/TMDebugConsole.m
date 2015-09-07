@@ -52,7 +52,6 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 
 @interface TMDebugConsole () <UITableViewDataSource, UITableViewDelegate>
 
-@property (nonatomic, strong) id<DDLogFormatter> logFormatter;
 @property (nonatomic, strong) NSMutableArray *messages;
 @property (nonatomic, strong) NSMutableArray *messagesPendingToBeAdded;
 @property (nonatomic, strong) NSDateFormatter *dateFormatter;
@@ -186,25 +185,40 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 
 - (void)logMessage:(DDLogMessage *)logMessage
 {
+	logMessage = [self formatLogMessage:logMessage];
+	[self scheduleLogMessage:logMessage];
+}
+
+- (DDLogMessage *)formatLogMessage:(DDLogMessage *)logMessage
+{
+	if (formatter)
+	{
+		NSString *logMsg = [formatter formatLogMessage:logMessage];
+		if (logMsg != nil)
+		{
+			logMessage->logMsg = logMsg;
+		}
+		else
+		{
+			logMessage = nil;
+		}
+	}
+	return logMessage;
+}
+
+- (void)scheduleLogMessage:(DDLogMessage *)logMessage
+{
+	if (logMessage == nil) return;
+	
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[self.messagesPendingToBeAdded addObject:logMessage];
-
+		
 		if ([self isPaused]) return;
-
+		
 		[self performSelector:@selector(flushPendingMessages)
 				   withObject:nil
 				   afterDelay:kTMDebugConsoleMessageBufferingTime];
 	});
-}
-
-- (id <DDLogFormatter>)logFormatter
-{
-    return self.logFormatter;
-}
-
-- (void)setLogFormatter:(id <DDLogFormatter>)formatter
-{
-    self.logFormatter = formatter;
 }
 
 - (void)flushPendingMessages
