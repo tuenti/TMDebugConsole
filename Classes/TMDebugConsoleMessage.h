@@ -9,15 +9,10 @@
 #import <Foundation/Foundation.h>
 
 @interface TMDebugConsoleMessage : NSObject
-{
-	// The public variables below can be accessed directly (for speed).
-	// For example: logMessage->logLevel
 
-@public
-	NSString *_logMessage;
-	NSDate *_timestamp;
-	int _logFlag;
-}
+@property (nonatomic, copy, readonly) NSString *logMessage;
+@property (nonatomic, readonly) NSDate *timestamp;
+@property (nonatomic, readonly) int logFlag;
 
 - (instancetype)initWithLogMessage:(NSString *)logMessage timestamp:(NSDate *)timestamp logFlag:(int)logFlag;
 

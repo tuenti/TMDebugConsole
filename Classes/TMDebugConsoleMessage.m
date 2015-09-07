@@ -16,7 +16,7 @@
 	if (self)
 	{
 		_logMessage = [logMessage copy];
-		_timestamp = [timestamp copy];
+		_timestamp = timestamp;
 		_logFlag = logFlag;
 	}
 	return self;
