@@ -18,6 +18,8 @@
 
 #import "TMDebugConsole.h"
 
+#import "TMDebugConsoleMessage.h"
+
 static TMDebugConsole *sharedInstance;
 
 static NSTimeInterval const kTMDebugConsoleMessageBufferingTime = 0.2;
@@ -185,31 +187,19 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 
 - (void)logMessage:(DDLogMessage *)logMessage
 {
-	logMessage = [self formatLogMessage:logMessage];
-	[self scheduleLogMessage:logMessage];
-}
+	NSString *logMsg = [formatter formatLogMessage:logMessage];
 
-- (DDLogMessage *)formatLogMessage:(DDLogMessage *)logMessage
-{
-	if (formatter)
+	if (logMsg)
 	{
-		NSString *logMsg = [formatter formatLogMessage:logMessage];
-		if (logMsg != nil)
-		{
-			logMessage->logMsg = logMsg;
-		}
-		else
-		{
-			logMessage = nil;
-		}
+		TMDebugConsoleMessage *message = [[TMDebugConsoleMessage alloc] initWithLogMessage:logMsg
+																				 timestamp:logMessage->timestamp
+																				   logFlag:logMessage->logFlag];
+		[self scheduleLogMessage:message];
 	}
-	return logMessage;
 }
 
-- (void)scheduleLogMessage:(DDLogMessage *)logMessage
+- (void)scheduleLogMessage:(TMDebugConsoleMessage *)logMessage
 {
-	if (logMessage == nil) return;
-	
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[self.messagesPendingToBeAdded addObject:logMessage];
 		
@@ -256,7 +246,7 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kTMDebugConsoleTableViewCell
 															forIndexPath:indexPath];
 
-    DDLogMessage *message = self.messages[self.messages.count - indexPath.row - 1];
+    TMDebugConsoleMessage *message = self.messages[self.messages.count - indexPath.row - 1];
     cell.textLabel.text = [self textForMessage:message];
     cell.textLabel.numberOfLines = kInfiniteLines;
 	cell.textLabel.textColor = [self colorForMessage:message];
@@ -269,25 +259,24 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    DDLogMessage *message = self.messages[self.messages.count - indexPath.row - 1];
-    NSString *messageText = [self textForMessage:message];
-    CGSize maximumMessageSize = CGSizeMake(self.tableView.bounds.size.width - kTMDebugConsoleTableViewCellHorizontalPadding, CGFLOAT_MAX);
-    CGSize messageSize = [messageText boundingRectWithSize:maximumMessageSize
-                                                   options:NSStringDrawingUsesLineFragmentOrigin
-                                                attributes:@{NSFontAttributeName: self.fontForMessages}
-                                                   context:nil].size;
-    
+    TMDebugConsoleMessage *message = self.messages[self.messages.count - indexPath.row - 1];
+	NSString *messageText = [self textForMessage:message];
+	CGSize maximumMessageSize = CGSizeMake(self.tableView.bounds.size.width - kTMDebugConsoleTableViewCellHorizontalPadding, CGFLOAT_MAX);
+	CGSize messageSize = [messageText boundingRectWithSize:maximumMessageSize
+												   options:NSStringDrawingUsesLineFragmentOrigin
+												attributes:@{NSFontAttributeName: self.fontForMessages}
+												   context:nil].size;
+
     return messageSize.height + kTMDebugConsoleTableViewCellVerticalSpacing;
 }
 
 #pragma mark - Message-dependent properties
 
-- (NSString *)textForMessage:(DDLogMessage *)message
+- (NSString *)textForMessage:(TMDebugConsoleMessage *)message
 {
-    NSMutableString *logMessage = [message->logMsg mutableCopy];
-	CFStringTrimWhitespace((CFMutableStringRef)logMessage);
-
-	NSString *formattedTime = [self.dateFormatter stringFromDate:message->timestamp];
+    NSMutableString *logMessage = [message.logMessage mutableCopy];
+    CFStringTrimWhitespace((CFMutableStringRef)logMessage);
+	NSString *formattedTime = [self.dateFormatter stringFromDate:message.timestamp];
 
 	NSString *formattedMessage = [NSString stringWithFormat:kTMDebugConsoleMessageFormat, formattedTime, logMessage];
 	if ([formattedMessage length] > kTMDebugConsoleMaximumMessageLength)
@@ -299,15 +288,15 @@ static NSString *const kTMDebugConsolePauseButtonContinue = @"Paused";
 	return formattedMessage;
 }
 
-- (UIColor *)colorForMessage:(DDLogMessage *)message
+- (UIColor *)colorForMessage:(TMDebugConsoleMessage *)message
 {
 	UIColor *colorForMessage;
 
-	if (message->logFlag == LOG_FLAG_ERROR)
+	if (message.logFlag == LOG_FLAG_ERROR)
 	{
 		colorForMessage = [UIColor redColor];
 	}
-	else if (message->logFlag == LOG_FLAG_WARN)
+	else if (message.logFlag == LOG_FLAG_WARN)
 	{
 		colorForMessage = [UIColor orangeColor];
 	}
